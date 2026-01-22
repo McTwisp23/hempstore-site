@@ -21,12 +21,15 @@
   *{box-sizing:border-box}
   html,body{
     margin:0;padding:0;
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
     background:var(--bg);
     color:var(--text);
     font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
   }
   a{text-decoration:none;color:inherit}
-  .container{width:min(1100px,calc(100% - 48px));margin:0 auto}
+  .container{width:min(1100px,100%);margin:0 auto;padding:0 16px}
 
   /* Elegant title (Cigarettis Hemp) */
   .card__title--elegant,
@@ -64,6 +67,24 @@
     .nav{width:100%; overflow:auto; padding-bottom:6px}
     .badge{margin-left:6px}
   }
+
+  @media(max-width:520px){
+    .header__inner{padding:10px 0; gap:10px}
+    .brand__name{font-size:20px}
+    .nav{gap:10px; font-size:14px; -webkit-overflow-scrolling: touch}
+    .nav__link{padding:6px 8px; border-radius:10px}
+    .badge{padding:2px 6px}
+
+    /* Make header controls fit (Lang, Currency, Login/Logout) */
+    .navwrap{gap:8px}
+    .navwrap .langbtn,
+    .navwrap .curbtn,
+    .navwrap .btn{flex:1 1 120px; justify-content:center}
+    .navwrap .langbtn{border-radius:999px; padding:9px 10px}
+    .navwrap #authArea{display:flex; flex:1 1 120px}
+    .navwrap #authArea .btn{width:100%}
+  }
+
   
   .badge{
     background:var(--brand);
@@ -175,11 +196,7 @@
     transition:opacity .6s ease;
   }
   .heroCarousel__slide.is-active{opacity:1}
-  .heroCarousel__slide img{
-    width:100%;height:100%;object-fit:cover;
-    display:block;
-    filter:saturate(1.05) contrast(.98);
-  }
+  .heroCarousel__slide img{max-width:100%;height:auto;display:block}
   .heroCarousel__overlay{
     position:absolute;inset:0;
     display:flex;align-items:center;justify-content:center;
@@ -827,3 +844,28 @@ h1, h2, h3 {
   background:rgba(255,255,255,.75);
 }
 .paybox__title{font-weight:900;margin-bottom:6px}
+
+
+
+/* ===== Mobile layout fixes (Header / Footer / Checkout) ===== */
+@media (max-width: 720px){
+  /* Checkout forms: avoid side-by-side inputs overflowing */
+  .formgrid{grid-template-columns:1fr}
+  .input,.select{width:100%; min-width:0}
+  .field{min-width:0}
+
+  /* Cards: reduce padding so content fits */
+  .cardform{padding:16px; border-radius:22px}
+}
+
+/* Footer: more compact on phones */
+@media (max-width: 600px){
+  .footerX{padding:22px 0 14px}
+  .footerX__grid{gap:14px}
+  .footerX__logo{width:40px;height:40px;border-radius:12px}
+  .footerX__desc{font-size:12px}
+  .footerX__title{font-size:12px}
+  /* Put link lists in 2 columns to reduce height */
+  .footerX__list{grid-template-columns:1fr 1fr; column-gap:16px}
+  .footerX__bottom{flex-direction:column; align-items:flex-start}
+}
