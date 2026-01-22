@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>HEMP Store</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body data-site="store">
+
+<!-- HEADER -->
+<header class="header">
+  <div class="container header__inner">
+
+    <!-- LOGO -->
+    <a class="brand" href="index.html">
+      <span class="brand__name">HEMP</span>
+      <span class="brand__name brand__name--light">Store</span>
+    </a>
+
+    <!-- NAV + LANG + AUTH -->
+    <div class="navwrap">
+      <nav class="nav">
+        <a class="nav__link nav__link--active" href="index.html" data-i18n="home"></a>
+        <a class="nav__link" href="produtos.html" data-i18n="products"></a>
+<a class="nav__link" href="hemp-oil-company.html" data-i18n="company"></a>
+<a class="nav__link" href="carrinho.html" data-i18n="cart"></a>
+        <span class="badge" id="cartBadge">0</span>
+      </nav>
+
+      <!-- Language selector -->
+      <button class="langbtn" id="langBtn" aria-label="Language selector">
+        <span class="langbtn__flag">🇧🇷</span>
+        <span class="langbtn__code">PT</span>
+        <span class="langbtn__chev">▾</span>
+      </button>
+
+      <!-- Login / Logout -->
+      <div id="authArea"></div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero__grid">
+
+      <div class="hero__copy">
+        <h1 class="hero__title" data-i18n="hero_title"></h1>
+        <p class="hero__subtitle" data-i18n="hero_sub"></p>
+        <a class="btn btn--primary" href="produtos.html" data-i18n="see_products"></a>
+      </div>
+
+      <!-- HERO image: real carousel (keeps same layout size) -->
+      <div class="hero__image heroCarousel" id="heroCarousel" aria-label="Hero carousel">
+        <div class="heroCarousel__slides" id="heroSlides" aria-hidden="true"></div>
+        <div class="heroCarousel__overlay" id="heroOverlay" data-i18n="hero_image_label"></div>
+
+        <button class="heroCarousel__btn heroCarousel__btn--prev" id="heroPrev" aria-label="Anterior">‹</button>
+        <button class="heroCarousel__btn heroCarousel__btn--next" id="heroNext" aria-label="Próximo">›</button>
+
+        <div class="heroCarousel__dots" id="heroDots" aria-label="Carousel pagination"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FEATURED PRODUCTS -->
+  <section class="featured">
+    <div class="container">
+      <h2 class="section-title" data-i18n="featured"></h2>
+      <!-- Featured products (static, rotates on each visit) -->
+      <div class="grid grid--3" id="featuredGrid" aria-label="Featured products"></div>
+    </div>
+  </section>
+
+
+  <!-- CANNABINOIDS -->
+  <section class="cannabinoids" id="cannabinoids">
+    <div class="container">
+      <h2 class="section-title" data-i18n="cannabinoids_title"></h2>
+      <p class="section-subtitle" data-i18n="cannabinoids_sub"></p>
+
+      <div class="grid grid--3 cannabinoids__grid" aria-label="Cannabinoids">
+        <div class="cannaCard">
+          <h3 class="cannaCard__title" data-i18n="cann_cbd_title"></h3>
+          <p class="cannaCard__p"><strong data-i18n="cann_label_props"></strong> <span data-i18n="cann_cbd_props"></span></p>
+          <p class="cannaCard__p"><strong data-i18n="cann_label_studied"></strong> <span data-i18n="cann_cbd_studied"></span></p>
+          <details class="cannaCard__more">
+            <summary data-i18n="learn_more"></summary>
+            <p class="cannaCard__p" data-i18n="cann_cbd_more"></p>
+          </details>
+        </div>
+
+        <div class="cannaCard">
+          <h3 class="cannaCard__title" data-i18n="cann_thc_title"></h3>
+          <p class="cannaCard__p"><strong data-i18n="cann_label_props"></strong> <span data-i18n="cann_thc_props"></span></p>
+          <p class="cannaCard__p"><strong data-i18n="cann_label_studied"></strong> <span data-i18n="cann_thc_studied"></span></p>
+          <details class="cannaCard__more">
+            <summary data-i18n="learn_more"></summary>
+            <p class="cannaCard__p" data-i18n="cann_thc_more"></p>
+          </details>
+        </div>
+
+        <div class="cannaCard">
+          <h3 class="cannaCard__title" data-i18n="cann_cbg_title"></h3>
+          <p class="cannaCard__p"><strong data-i18n="cann_label_props"></strong> <span data-i18n="cann_cbg_props"></span></p>
+          <p class="cannaCard__p"><strong data-i18n="cann_label_studied"></strong> <span data-i18n="cann_cbg_studied"></span></p>
+          <details class="cannaCard__more">
+            <summary data-i18n="learn_more"></summary>
+            <p class="cannaCard__p" data-i18n="cann_cbg_more"></p>
+          </details>
+        </div>
+      </div>
+
+      <p class="cannaCard__note" data-i18n="cann_note"></p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footerX" id="siteFooter">
+    <div class="container footerX__grid">
+
+      <div class="footerX__brand">
+        <div class="footerX__logo" id="footerLogo">HEMP</div>
+        <div>
+          <div class="footerX__name" id="footerBrand">HEMP Store</div>
+          <div class="footerX__desc" id="footerDesc" data-i18n="footer_desc_store"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="footerX__title" data-i18n="footer_nav"></div>
+        <ul class="footerX__list" id="footerNav">
+          <li><a href="index.html" data-i18n="home"></a></li>
+          <li><a href="produtos.html" data-i18n="products"></a></li>
+          <li><a href="index.html#sobre" data-i18n="about"></a></li>
+          <li><a href="index.html#contato" data-i18n="contact"></a></li>
+          <li><a href="hemp-oil-company.html" data-i18n="company"></a></li>
+        </ul>
+      </div>
+
+      <div id="footerSearchWrap" class="footerX__search">
+        <div class="footerX__title" data-i18n="footer_search"></div>
+        <div class="footerX__searchbox">
+          <input class="input input--search input--searchFooter" id="footerSearchInput" data-i18n-ph="search_ph"/>
+          <div class="footerX__hint" data-i18n="footer_search_hint"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="footerX__title" data-i18n="footer_legal"></div>
+        <ul class="footerX__list">
+          <li><a href="termos.html" data-i18n="terms"></a></li>
+          <li><a href="privacidade.html" data-i18n="privacy"></a></li>
+          <li><a href="cookies.html" data-i18n="cookies"></a></li>
+          <li><a href="lgpd.html" data-i18n="lgpd"></a></li>
+        </ul>
+      </div>
+
+      <div class="footerX__newsletter">
+        <div class="footerX__title" data-i18n="footer_newsletter"></div>
+        <p class="footerX__note" data-i18n="footer_newsletter_sub"></p>
+
+        <div class="footerX__form">
+          <input id="newsletterEmail" class="input" type="email" data-i18n-ph="email_placeholder" placeholder="email@exemplo.com" />
+          <button id="newsletterBtn" class="btn btn--primary" type="button" data-i18n="subscribe"></button>
+        </div>
+        <div class="footerX__status" id="newsletterStatus" aria-live="polite"></div>
+      </div>
+
+    </div>
+
+    <div class="container footerX__bottom">
+      <small id="footerCopy">© <span id="footerYear"></span> <span data-i18n="footer_company">Hemp Store S.A.</span></small>
+      <small class="footerX__muted" id="footerGroup" data-i18n="footer_group">Grupo JP. DIETERICH</small>
+    </div>
+  </footer>
+
+</main>
+
+<!-- LANGUAGE MODAL (iPhone-style wheel) -->
+<div class="modal" id="langModal" aria-hidden="true">
+  <div class="sheet">
+    <div class="sheet__head">
+      <div class="sheet__title" data-i18n="language">Language</div>
+      <button class="sheet__close" id="langClose" data-i18n="ok">OK</button>
+    </div>
+    <div class="wheel" id="langWheel"></div>
+  </div>
+</div>
+
+<!-- SCRIPT -->
+<script src="app.js"></script>
+</body>
+</html>

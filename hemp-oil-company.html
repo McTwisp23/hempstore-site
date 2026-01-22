@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Hemp Oil Company S.A.</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body data-site="hoc">
+
+<!-- HEADER -->
+<header class="header">
+  <div class="container header__inner">
+
+    <!-- LOGO -->
+    <a class="brand" href="index.html">
+      <span class="brand__name">HEMP</span>
+      <span class="brand__name brand__name--light">Store</span>
+    </a>
+
+    <!-- NAV + LANG + AUTH -->
+    <div class="navwrap">
+      <nav class="nav">
+        <a class="nav__link nav__link--active" href="index.html" data-i18n="home"></a>
+        <a class="nav__link" href="produtos.html" data-i18n="products"></a>
+        <a class="nav__link" href="index.html#sobre" data-i18n="about"></a>
+        <a class="nav__link" href="index.html#contato" data-i18n="contact"></a>
+                <a class="nav__link" href="hemp-oil-company.html" data-i18n="company"></a>
+<a class="nav__link" href="carrinho.html" data-i18n="cart"></a>
+        <span class="badge" id="cartBadge">0</span>
+      </nav>
+
+      <!-- Language selector -->
+      <button class="langbtn" id="langBtn" aria-label="Language selector">
+        <span class="langbtn__flag">🇧🇷</span>
+        <span class="langbtn__code">PT</span>
+        <span class="langbtn__chev">▾</span>
+      </button>
+
+      <!-- Login / Logout -->
+      <div id="authArea"></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="container hero__grid">
+      <div class="hero__left">
+        <h1 class="hero__title" data-i18n="hoc_title">Hemp Oil Company S.A.</h1>
+        <p class="hero__sub" data-i18n="hoc_hero_sub">
+          P&amp;D, qualidade e cadeia de suprimentos para produtos derivados de hemp e cannabis medicinal,
+          com foco em conformidade e rastreabilidade.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="hoc-solucoes.html" data-i18n="hoc_btn_solutions">Ver soluções</a>
+          <a class="btn btn--ghost" href="produtos.html" data-i18n="hoc_btn_store">Ir para a loja (Hemp Store)</a>
+        </div>
+      </div>
+
+      <div class="hero__image heroCarousel" aria-label="Institucional">
+        <div class="heroCarousel__slides" aria-hidden="true"></div>
+        <div class="heroCarousel__overlay" data-i18n="institutional">Institucional</div>
+      </div>
+</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="featured">
+    <div class="container">
+      <h2 class="section-title" data-i18n="hoc_areas_title">Áreas principais</h2>
+      <div class="grid grid--3">
+        <div class="card">
+          <div class="card__img card__img--mint"><div class="card__imgText" data-i18n="hoc_badge_rd">P&amp;D</div></div>
+          <div class="card__body">
+            <h3 class="card__title" data-i18n="hoc_card_rd_title">Pesquisa e desenvolvimento</h3>
+            <p class="card__sub" data-i18n="hoc_card_rd_sub">Estrutura para especificações, estabilidade, documentação e inovação.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__img card__img--mint"><div class="card__imgText" data-i18n="hoc_badge_quality">Qualidade</div></div>
+          <div class="card__body">
+            <h3 class="card__title" data-i18n="hoc_card_quality_title">Qualidade e rastreabilidade</h3>
+            <p class="card__sub" data-i18n="hoc_card_quality_sub">Diretrizes de cadeia de custódia, controle por lote e consistência.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__img card__img--mint"><div class="card__imgText" data-i18n="hoc_badge_compliance">Compliance</div></div>
+          <div class="card__body">
+            <h3 class="card__title" data-i18n="hoc_card_compliance_title">Governança e conformidade</h3>
+            <p class="card__sub" data-i18n="hoc_card_compliance_sub">Políticas internas e adequação a normas aplicáveis (quando exigido).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about" id="contato">
+    <div class="container about__grid">
+      <div>
+        <h2 class="section-title" data-i18n="hoc_contact_title">Contato B2B</h2>
+        <p class="muted" data-i18n="hoc_contact_sub">
+          Fale com a equipe comercial/técnica para parcerias, distribuição e desenvolvimento de portfólio.
+        </p>
+        <div class="hr"></div>
+        <p class="small"><b data-i18n="label_email">Email:</b> contato@hempoilcompany.com.br</p>
+        <p class="small"><b data-i18n="label_partnerships">Parcerias:</b> parcerias@hempoilcompany.com.br</p>
+      </div>
+
+      <div class="panel">
+        <div class="panel__title" data-i18n="hoc_quick_msg">Mensagem rápida</div>
+        <div class="formgrid formgrid--1">
+          <div class="field">
+            <label class="label" data-i18n="label_name">Nome</label>
+            <input class="input" placeholder="Seu nome"/>
+          </div>
+          <div class="field">
+            <label class="label" data-i18n="email">E-mail</label>
+            <input class="input" placeholder="email@empresa.com"/>
+          </div>
+          <div class="field">
+            <label class="label" data-i18n="label_message">Mensagem</label>
+            <textarea class="input" rows="4" placeholder="Como podemos ajudar?"></textarea>
+          </div>
+          <button class="btn btn--primary" type="button" onclick="alert('Formulário demo. Podemos integrar envio real (SMTP/Resend).')" data-i18n="send">Enviar</button>
+          <div class="small muted" data-i18n="hoc_form_demo">Formulário demo. Peça integração de envio real.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+  <!-- FOOTER -->
+  <footer class="footerX" id="siteFooter">
+    <div class="container footerX__grid">
+
+      <div class="footerX__brand">
+        <div class="footerX__logo" id="footerLogo">HEMP</div>
+        <div>
+          <div class="footerX__name" id="footerBrand">HEMP Store</div>
+          <div class="footerX__desc" id="footerDesc" data-i18n="footer_desc_store"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="footerX__title" data-i18n="footer_nav"></div>
+        <ul class="footerX__list" id="footerNav">
+          <li><a href="index.html" data-i18n="home"></a></li>
+          <li><a href="produtos.html" data-i18n="products"></a></li>
+          <li><a href="index.html#sobre" data-i18n="about"></a></li>
+          <li><a href="index.html#contato" data-i18n="contact"></a></li>
+          <li><a href="hemp-oil-company.html" data-i18n="company"></a></li>
+        </ul>
+      </div>
+
+      <div id="footerSearchWrap" class="footerX__search">
+        <div class="footerX__title" data-i18n="footer_search"></div>
+        <div class="footerX__searchbox">
+          <input class="input input--search input--searchFooter" id="footerSearchInput" data-i18n-ph="search_ph"/>
+          <div class="footerX__hint" data-i18n="footer_search_hint"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="footerX__title" data-i18n="footer_legal"></div>
+        <ul class="footerX__list">
+          <li><a href="termos.html" data-i18n="terms"></a></li>
+          <li><a href="privacidade.html" data-i18n="privacy"></a></li>
+          <li><a href="cookies.html" data-i18n="cookies"></a></li>
+          <li><a href="lgpd.html" data-i18n="lgpd"></a></li>
+        </ul>
+      </div>
+
+      <div class="footerX__newsletter">
+        <div class="footerX__title" data-i18n="footer_newsletter"></div>
+        <p class="footerX__note" data-i18n="footer_newsletter_sub"></p>
+
+        <div class="footerX__form">
+          <input id="newsletterEmail" class="input" type="email" data-i18n-ph="email_placeholder" placeholder="email@exemplo.com" />
+          <button id="newsletterBtn" class="btn btn--primary" type="button" data-i18n="subscribe"></button>
+        </div>
+        <div class="footerX__status" id="newsletterStatus" aria-live="polite"></div>
+      </div>
+
+    </div>
+
+    <div class="container footerX__bottom">
+      <small id="footerCopy">© <span id="footerYear"></span> <span data-i18n="footer_company">Hemp Store S.A.</span></small>
+      <small class="footerX__muted" id="footerGroup" data-i18n="footer_group">Grupo JP. DIETERICH</small>
+    </div>
+  </footer>
+
+<div class="modal" id="langModal" aria-hidden="true">
+  <div class="sheet">
+    <div class="sheet__head">
+      <div class="sheet__title" data-i18n="language">Language</div>
+      <button class="sheet__close" id="langClose" data-i18n="ok">OK</button>
+    </div>
+    <div class="wheel" id="langWheel"></div>
+  </div>
+</div>
+
+<!-- SCRIPT -->
+<script src="app.js"></script>
+</body>
+</html>
