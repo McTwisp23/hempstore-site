@@ -25,6 +25,8 @@ const LANGS = [
     userKey: "hemp_user",
     cartKey: "hemp_cart",
     orderKey:"hemp_last_order",
+    tokenKey:"hemp_token",
+    apiKey:"hemp_api",
   };
   
   function getLang(){
@@ -34,17 +36,68 @@ const LANGS = [
   function setLang(code){ localStorage.setItem(LS.langKey, code); }
   function getUser(){ try { return JSON.parse(localStorage.getItem(LS.userKey) || "null"); } catch { return null; } }
   function setUser(user){ localStorage.setItem(LS.userKey, JSON.stringify(user)); }
-  function logout(){ localStorage.removeItem(LS.userKey); location.href = "index.html"; }
+  function logout(){ localStorage.removeItem(LS.userKey); localStorage.removeItem(LS.tokenKey); location.href = "index.html"; }
   
   function getCart(){ try { return JSON.parse(localStorage.getItem(LS.cartKey) || "[]"); } catch { return []; } }
   function setCart(cart){ localStorage.setItem(LS.cartKey, JSON.stringify(cart)); updateCartBadge(); }
   function cartCount(){ return getCart().reduce((sum,i)=>sum + i.qty, 0); }
   
-  /* ---------- i18n dictionary ---------- */
+  
+  /* ---------- API (localhost default) ---------- */
+  function getApiBase(){
+    const q = new URLSearchParams(location.search);
+    const fromQuery = q.get("api");
+    if(fromQuery){
+      const clean = String(fromQuery).replace(/\/$/, "");
+      localStorage.setItem(LS.apiKey, clean);
+      return clean;
+    }
+    const stored = localStorage.getItem(LS.apiKey);
+    return String(stored || "http://localhost:3001").replace(/\/$/, "");
+  }
+  function getToken(){ return localStorage.getItem(LS.tokenKey) || ""; }
+  function setToken(tok){
+    if(tok) localStorage.setItem(LS.tokenKey, tok);
+    else localStorage.removeItem(LS.tokenKey);
+  }
+
+  async function apiFetch(path, opts={}){
+    const url = getApiBase() + path;
+    const headers = Object.assign({ "Content-Type":"application/json" }, (opts.headers||{}));
+    const tok = getToken();
+    if(tok) headers["Authorization"] = "Bearer " + tok;
+    const res = await fetch(url, Object.assign({}, opts, { headers }));
+    let data = null;
+    const ct = res.headers.get("content-type") || "";
+    if(ct.includes("application/json")){
+      try{ data = await res.json(); }catch{ data = null; }
+    } else {
+      try{ data = await res.text(); }catch{ data = null; }
+    }
+    if(!res.ok){
+      const msg = (data && data.error) ? data.error : `HTTP ${res.status}`;
+      const err = new Error(msg);
+      // @ts-ignore
+      err.status = res.status;
+      // @ts-ignore
+      err.data = data;
+      throw err;
+    }
+    return data;
+  }
+
+  function setAuthSession(payload){
+    // payload: { token, user }
+    if(payload?.token) setToken(payload.token);
+    if(payload?.user) setUser(payload.user);
+  }
+
+/* ---------- i18n dictionary ---------- */
   const I18N = {
     pt: {
       home:"Home", products:"Produtos", about:"Sobre", contact:"Contato",
       cart:"Carrinho", checkout:"Checkout", login:"Login",
+      my_orders:"Minhas compras",
       language:"Idioma", ok:"OK",
       hero_title:"Lifestyle canábico",
       hero_sub:"Produtos premium à base de cânhamo. Design, bem-estar e sustentabilidade em um só lugar.",
@@ -79,7 +132,7 @@ const LANGS = [
       sign_out:"Sair",
       email:"E-mail",
       password:"Senha",
-      create_demo:"(Demo) Use qualquer e-mail/senha",
+      create_demo:"(Conta real) Use seu e-mail e senha (mín. 8 caracteres)",
   
       empty_cart:"Seu carrinho está vazio.",
       item:"Item",
@@ -206,6 +259,7 @@ const LANGS = [
     en: {
       home:"Home", products:"Products", about:"About", contact:"Contact",
       cart:"Cart", checkout:"Checkout", login:"Login",
+      my_orders:"My orders",
       language:"Language", ok:"OK",
       hero_title:"Cannabis lifestyle",
       hero_sub:"Premium hemp-based products. Design, wellness and sustainability in one place.",
@@ -366,6 +420,7 @@ const LANGS = [
     it: {
       home:"Home", products:"Prodotti", about:"Chi siamo", contact:"Contatto",
       cart:"Carrello", checkout:"Checkout", login:"Login",
+      my_orders:"I miei ordini",
       language:"Lingua", ok:"OK",
       hero_title:"Lifestyle cannabico",
       hero_sub:"Prodotti premium a base di canapa. Design, benessere e sostenibilità in un unico posto.",
@@ -523,6 +578,7 @@ const LANGS = [
     fr: {
       home:"Accueil", products:"Produits", about:"À propos", contact:"Contact",
       cart:"Panier", checkout:"Paiement", login:"Connexion",
+      my_orders:"Mes achats",
       language:"Langue", ok:"OK",
       hero_title:"Lifestyle cannabique",
       hero_sub:"Produits premium à base de chanvre. Design, bien-être et durabilité au même endroit.",
@@ -680,6 +736,7 @@ const LANGS = [
     de: {
       home:"Start", products:"Produkte", about:"Über uns", contact:"Kontakt",
       cart:"Warenkorb", checkout:"Kasse", login:"Login",
+      my_orders:"Meine Bestellungen",
       language:"Sprache", ok:"OK",
       hero_title:"Cannabis-Lifestyle",
       hero_sub:"Premium-Hanfprodukte. Design, Wohlbefinden und Nachhaltigkeit an einem Ort.",
@@ -837,6 +894,7 @@ const LANGS = [
     es: {
       home:"Inicio", products:"Productos", about:"Sobre", contact:"Contacto",
       cart:"Carrito", checkout:"Checkout", login:"Login",
+      my_orders:"Mis compras",
       language:"Idioma", ok:"OK",
       hero_title:"Lifestyle cannábico",
       hero_sub:"Productos premium a base de cáñamo. Diseño, bienestar y sostenibilidad en un solo lugar.",
@@ -978,6 +1036,7 @@ const LANGS = [
     ja: {
       home:"ホーム", products:"商品", about:"概要", contact:"お問い合わせ",
       cart:"カート", checkout:"チェックアウト", login:"ログイン",
+      my_orders:"購入履歴",
       language:"言語", ok:"OK",
       hero_title:"カンナビス・ライフスタイル",
       hero_sub:"高品質ヘンプ製品。デザイン、ウェルネス、サステナビリティをひとつに。",
@@ -1144,6 +1203,7 @@ const LANGS = [
     zh: {
       home:"首页", products:"产品", about:"关于", contact:"联系",
       cart:"购物车", checkout:"结账", login:"登录",
+      my_orders:"我的订单",
       language:"语言", ok:"好",
       hero_title:"大麻生活方式",
       hero_sub:"优质工业大麻产品：设计、健康与可持续，一站式体验。",
@@ -1445,7 +1505,7 @@ function t(key){
     "OG Kush",
   ];
 
-  const OIL_MG = ["500mg","1000mg","1500mg","2000mg","3000mg"];
+  const OIL_MG = ["20 mg/mL","50 mg/mL","200 mg/mL"];
   const SPECTRUM = ["Isolado","Full Spectrum"];
   const CBD_THC = ["CBD","THC (onde permitido)"];
 
@@ -1455,428 +1515,374 @@ function t(key){
   const PRODUCTS = [
     // Óleos
     {
-      id:"oil-cbd-isolado",
+      id:"oil-cbd",
       category:"oils",
-      name:"Óleo CBD Isolado",
-      price:34.90,
-      short:"CBD • Isolado • 30ml (demo)",
+      name:"Óleo CBD",
+      price:39.9,
+      short:"CBD • 30ml • (demo)",
       imageLabel:"Óleo",
-      optionGroups:[
-        { key:"spectrum", labelKey:"opt_spectrum", options:["Isolado"] },
-        { key:"mg", labelKey:"opt_mg", options:OIL_MG },
-        { key:"ml", labelKey:"opt_ml", options:["30ml"] },
-      ],
-      desc:
-        "Óleo CBD Isolado (demo). Isolado foca em um canabinoide principal, com perfil mais neutro. Sempre confirme legalidade local e use com responsabilidade."
-    },
-    {
-      id:"oil-full-spectrum",
-      category:"oils",
-      name:"Óleo Full Spectrum",
-      price:39.90,
-      short:"CBD • Full Spectrum • 30ml (demo)",
-      imageLabel:"Óleo",
-      optionGroups:[
-        { key:"spectrum", labelKey:"opt_spectrum", options:["Full Spectrum"] },
-        { key:"mg", labelKey:"opt_mg", options:OIL_MG },
-        { key:"ml", labelKey:"opt_ml", options:["30ml"] },
-      ],
-      desc:
-        "Óleo Full Spectrum (demo). Em geral traz um conjunto maior de compostos do cânhamo (incluindo terpenos), o que pode mudar aroma e experiência. Confira rótulo e conformidade."
+      optionGroups:[{ key:"strength", labelKey:"opt_strength", options:["20 mg/mL", "50 mg/mL", "200 mg/mL"] }, { key:"ml", labelKey:"opt_ml", options:["30ml"] }],
+      desc:"Óleo de CBD (demo). Variações de potência em mg/mL. Sempre confirme a legalidade local e utilize com responsabilidade."
     },
     {
       id:"oil-cbg",
       category:"oils",
       name:"Óleo CBG",
-      price:36.90,
-      short:"CBG • Isolado • 30ml (demo)",
+      price:42.9,
+      short:"CBG • 30ml • (demo)",
       imageLabel:"Óleo",
-      optionGroups:[
-        { key:"cannabinoid", labelKey:"opt_cannabinoid", options:["CBG"] },
-        { key:"spectrum", labelKey:"opt_spectrum", options:["Isolado"] },
-        { key:"mg", labelKey:"opt_mg", options:OIL_MG },
-        { key:"ml", labelKey:"opt_ml", options:["30ml"] },
-      ],
-      desc:
-        "Óleo CBG (demo). Geralmente formulado com canabigerol. Confira o rótulo e a conformidade/legalidade local."
+      optionGroups:[{ key:"strength", labelKey:"opt_strength", options:["20 mg/mL", "50 mg/mL", "200 mg/mL"] }, { key:"ml", labelKey:"opt_ml", options:["30ml"] }],
+      desc:"Óleo de CBG (demo). Variações de potência em mg/mL. Sempre confirme a legalidade local e utilize com responsabilidade."
     },
-
-
-
+    {
+      id:"oil-thc",
+      category:"oils",
+      name:"Óleo THC",
+      price:49.9,
+      short:"THC • 30ml • (demo)",
+      imageLabel:"Óleo",
+      optionGroups:[{ key:"strength", labelKey:"opt_strength", options:["20 mg/mL", "50 mg/mL", "200 mg/mL"] }, { key:"ml", labelKey:"opt_ml", options:["30ml"] }],
+      desc:"Óleo de THC (demo). Produto com THC pode ter efeitos psicoativos. Use com cautela e confirme conformidade/idade/legalidade."
+    },
+    {
+      id:"oil-full-spectrum",
+      category:"oils",
+      name:"Óleo Full Spectrum",
+      price:44.9,
+      short:"Full Spectrum • 30ml • (contém THC) (demo)",
+      imageLabel:"Óleo",
+      optionGroups:[{ key:"strength", labelKey:"opt_strength", options:["20 mg/mL", "50 mg/mL", "200 mg/mL"] }, { key:"ml", labelKey:"opt_ml", options:["30ml"] }],
+      desc:"Óleo Full Spectrum (demo). **Aviso:** pode conter THC (mesmo em baixas quantidades), o que pode afetar dose/efeitos e testes. Verifique rótulo, conformidade e legislação local."
+    },
     // Strains
-    ...STRAIN_LIST.map((s, idx)=>({
-      id:`strain-${idx}`,
+    {
+      id:"strain-gorilla-glue",
       category:"strains",
-      name:`${s}`,
-      price:59.90,
-      short:"Variedade selecionável • 5g / 10g (demo, onde permitido)",
+      name:"Gorilla Glue",
+      price:59.9,
+      short:"Strain • Flor • (demo)",
       imageLabel:"Strain",
-      optionGroups:[
-        { key:"strain", labelKey:"opt_strain", options:[s] },
-        { key:"weight", labelKey:"opt_weight", options:["5g","10g"] },
-      ],
-      desc:
-        `Strain (${s}) (demo). Strains variam por aroma (terpenos) e composição. Experiências são individuais e dependem de dose, tolerância e contexto.`
-    })),
-
+      optionGroups:[{ key:"strain", labelKey:"opt_strain", options:["Gorilla Glue"] }, { key:"weight", labelKey:"opt_weight", options:["5g", "10g"] }],
+      desc:"Gorilla Glue (demo). Produto ilustrativo. Confirme disponibilidade e conformidade local."
+    },
+    {
+      id:"strain-purple-haze",
+      category:"strains",
+      name:"Purple Haze",
+      price:59.9,
+      short:"Strain • Flor • (demo)",
+      imageLabel:"Strain",
+      optionGroups:[{ key:"strain", labelKey:"opt_strain", options:["Purple Haze"] }, { key:"weight", labelKey:"opt_weight", options:["5g", "10g"] }],
+      desc:"Purple Haze (demo). Produto ilustrativo. Confirme disponibilidade e conformidade local."
+    },
+    {
+      id:"strain-og-kush",
+      category:"strains",
+      name:"OG Kush",
+      price:59.9,
+      short:"Strain • Flor • (demo)",
+      imageLabel:"Strain",
+      optionGroups:[{ key:"strain", labelKey:"opt_strain", options:["OG Kush"] }, { key:"weight", labelKey:"opt_weight", options:["5g", "10g"] }],
+      desc:"OG Kush (demo). Produto ilustrativo. Confirme disponibilidade e conformidade local."
+    },
     // Charutaria
     {
-      id:"charutos-san-juan",
+      id:"cigar-san-juan",
       category:"cigars",
       name:"Charutos San Juan",
-      price:29.90,
-      short:"Configuração por peso e strain (demo)",
-      imageLabel:"Charutaria",
-      optionGroups:[
-        { key:"weight", labelKey:"opt_weight", options:["10g","15g","20g"] },
-        { key:"strain", labelKey:"opt_strain", options:STRAIN_LIST },
-      ],
-      desc:
-        "Charutos San Juan (demo). Selecione peso e strain. Em locais onde é permitido, a experiência costuma envolver aroma e ritual. Use com responsabilidade."
+      price:79.9,
+      short:"Charutos • (demo)",
+      imageLabel:"Charuto",
+      optionGroups:[{ key:"strain", labelKey:"opt_strain", options:["Gorilla Glue", "Purple Haze", "OG Kush"] }, { key:"weight", labelKey:"opt_weight", options:["10g", "15g", "20g"] }],
+      desc:"Charutos San Juan (demo). Escolha variedade (strain) e peso total da caixa."
     },
     {
-      id:"juanitos-01g",
+      id:"juanitos",
       category:"cigars",
-      name:"Juanitos • Pré-enrolado 01g",
-      price:9.90,
-      short:"Cigarro pré-enrolado • 01g • strain selecionável (demo)",
-      imageLabel:"Charutaria",
-      optionGroups:[
-        { key:"weight", labelKey:"opt_weight", options:["01g"] },
-        { key:"strain", labelKey:"opt_strain", options:STRAIN_LIST },
-      ],
-      desc:
-        "Juanitos (demo). Pré-enrolado de 01g com seleção de strain. Prefira ambientes seguros e doses menores."
+      name:"Juanitos (pre-roll)",
+      price:14.9,
+      short:"Pre-roll • 1g • (demo)",
+      imageLabel:"Juanitos",
+      optionGroups:[{ key:"strain", labelKey:"opt_strain", options:["Gorilla Glue", "Purple Haze", "OG Kush"] }, { key:"weight", labelKey:"opt_weight", options:["1g"] }],
+      desc:"Juanitos (demo). Cigarro pre-enrolado de 1g, com opção de strain."
     },
-
     // Extrações
-    ...[
-      { id:"dry", name:"Dry" },
-      { id:"bubble-hash-ice", name:"Bubble Hash (ice)" },
-      { id:"rosin", name:"Rosin" },
-      { id:"live-rosin", name:"Live Rosin" },
-      { id:"diamonds", name:"Diamonds THC/CBD" },
-    ].map((e, idx)=>({
-      id:`extract-${e.id}`,
+    {
+      id:"extract-dry",
       category:"extracts",
-      name:e.name,
-      price:44.90 + (idx*6),
-      short:"Extração (demo) • strain selecionável",
-      imageLabel:"Extração",
-      optionGroups:[
-        ...(e.id==="diamonds"
-          ? [{ key:"cannabinoid", labelKey:"opt_cannabinoid", options:["THC (onde permitido)","CBD"] }]
-          : []
-        ),
-        { key:"type", labelKey:"opt_type", options:[e.name] },
-        { key:"strain", labelKey:"opt_strain", options:STRAIN_LIST },
-        { key:"weight", labelKey:"opt_weight", options:(e.id==="diamonds" ? ["0.5g","1g"] : ["1g","5g"]) },
-      ],
-      desc:
-        "Extrações (demo). Em geral são mais concentradas — comece leve e use com responsabilidade (e conforme legislação local)."
-    })),
-
+      name:"Dry",
+      price:29.9,
+      short:"Extração • (demo)",
+      imageLabel:"Dry",
+      optionGroups:[{ key:"strain", labelKey:"opt_strain", options:["Gorilla Glue", "Purple Haze", "OG Kush"] }, { key:"weight", labelKey:"opt_weight", options:["1g", "5g"] }],
+      desc:"Dry (demo). Escolha strain e peso. Confirme conformidade local."
+    },
+    {
+      id:"extract-bubble-hash",
+      category:"extracts",
+      name:"Bubble Hash",
+      price:34.9,
+      short:"Extração • (demo)",
+      imageLabel:"Bubble Hash",
+      optionGroups:[{ key:"strain", labelKey:"opt_strain", options:["Gorilla Glue", "Purple Haze", "OG Kush"] }, { key:"weight", labelKey:"opt_weight", options:["1g", "5g"] }],
+      desc:"Bubble Hash (demo). Escolha strain e peso. Confirme conformidade local."
+    },
+    {
+      id:"extract-rosin",
+      category:"extracts",
+      name:"Rosin",
+      price:39.9,
+      short:"Extração • (demo)",
+      imageLabel:"Rosin",
+      optionGroups:[{ key:"strain", labelKey:"opt_strain", options:["Gorilla Glue", "Purple Haze", "OG Kush"] }, { key:"weight", labelKey:"opt_weight", options:["1g", "5g"] }],
+      desc:"Rosin (demo). Escolha strain e peso. Confirme conformidade local."
+    },
+    {
+      id:"extract-live-rosin",
+      category:"extracts",
+      name:"Live Rosin",
+      price:44.9,
+      short:"Extração • (demo)",
+      imageLabel:"Live Rosin",
+      optionGroups:[{ key:"strain", labelKey:"opt_strain", options:["Gorilla Glue", "Purple Haze", "OG Kush"] }, { key:"weight", labelKey:"opt_weight", options:["1g", "5g"] }],
+      desc:"Live Rosin (demo). Escolha strain e peso. Confirme conformidade local."
+    },
+    {
+      id:"extract-diamonds",
+      category:"extracts",
+      name:"Diamonds THC/CBD",
+      price:49.9,
+      short:"Extração • (demo)",
+      imageLabel:"Diamonds",
+      optionGroups:[{ key:"strain", labelKey:"opt_strain", options:["Gorilla Glue", "Purple Haze", "OG Kush"] }, { key:"weight", labelKey:"opt_weight", options:["1g", "5g"] }],
+      desc:"Diamonds THC/CBD (demo). Escolha strain e peso. Confirme conformidade local."
+    },
     // Comestíveis
     {
-      id:"edible-gumes",
+      id:"edible-gummies",
       category:"edibles",
-      name:"Gumes",
-      price:19.90,
-      short:"Comestível (demo) • sabores • 50g / 100g",
-      imageLabel:"Comestíveis",
-      optionGroups:[
-        { key:"cannabinoid", labelKey:"opt_cannabinoid", options:CBD_THC },
-        { key:"flavor", labelKey:"opt_flavor", options:["Morango","Melancia","Uva","Laranja","Limão","Tangerina","Manga"] },
-        { key:"weight", labelKey:"opt_weight", options:["50g","100g"] },
-      ],
-      desc:
-        "Gumes (demo). Práticos e discretos. Comestíveis podem demorar mais para fazer efeito — vá com calma."
+      name:"Gumes (Gummies)",
+      price:24.9,
+      short:"Comestível • Gumes • (demo)",
+      imageLabel:"Gumes",
+      optionGroups:[{ key:"flavor", labelKey:"opt_flavor", options:["Morango", "Melancia", "Uva", "Laranja", "Limão", "Tangerina", "Manga"] }, { key:"weight", labelKey:"opt_weight", options:["50g", "100g"] }],
+      desc:"Gumes (demo). Escolha sabor e tamanho."
     },
     {
-      id:"edible-mel-100",
+      id:"edible-honey",
       category:"edibles",
-      name:"Mel infusionado de THC",
-      price:27.90,
-      short:"Comestível (demo) • THC (onde permitido) • 100ml",
-      imageLabel:"Comestíveis",
-      optionGroups:[
-        { key:"cannabinoid", labelKey:"opt_cannabinoid", options:["THC (onde permitido)"] },
-        { key:"ml", labelKey:"opt_ml", options:["100ml"] },
-      ],
-      desc:
-        "Mel infusionado (demo). Combina com chás e receitas — atenção à dose."
+      name:"Mel infundido de THC",
+      price:29.9,
+      short:"Comestível • 100ml • (demo)",
+      imageLabel:"Mel",
+      optionGroups:[{ key:"ml", labelKey:"opt_ml", options:["100ml"] }],
+      desc:"Mel infundido (demo). Produto com THC pode ter efeitos psicoativos. Use com responsabilidade."
     },
     {
-      id:"edible-butter-100",
+      id:"edible-butter",
       category:"edibles",
       name:"Manteiga Trufada de THC",
-      price:29.90,
-      short:"Comestível (demo) • THC (onde permitido) • 100g",
-      imageLabel:"Comestíveis",
-      optionGroups:[
-        { key:"cannabinoid", labelKey:"opt_cannabinoid", options:["THC (onde permitido)"] },
-        { key:"weight", labelKey:"opt_weight", options:["100g"] },
-      ],
-      desc:
-        "Manteiga trufada (demo). Ideal para receitas — controle de dose é essencial."
+      price:32.9,
+      short:"Comestível • 100g • (demo)",
+      imageLabel:"Manteiga",
+      optionGroups:[{ key:"weight", labelKey:"opt_weight", options:["100g"] }],
+      desc:"Manteiga trufada (demo). Produto com THC pode ter efeitos psicoativos."
     },
     {
       id:"edible-chocolate",
       category:"edibles",
       name:"Chocolate",
-      price:22.90,
-      short:"Comestível (demo) • CBD/THC • 100g",
-      imageLabel:"Comestíveis",
-      optionGroups:[
-        { key:"cannabinoid", labelKey:"opt_cannabinoid", options:CBD_THC },
-        { key:"flavor", labelKey:"opt_flavor", options:["Ao leite","Amargo","Branco"] },
-        { key:"weight", labelKey:"opt_weight", options:["100g"] },
-      ],
-      desc:
-        "Chocolate (demo). Uma forma clássica de consumo; lembre que a absorção pode ser mais lenta."
+      price:19.9,
+      short:"Comestível • (demo)",
+      imageLabel:"Chocolate",
+      optionGroups:[{ key:"flavor", labelKey:"opt_flavor", options:["Ao leite", "Amargo", "Branco"] }, { key:"weight", labelKey:"opt_weight", options:["50g", "100g"] }],
+      desc:"Chocolate (demo)."
     },
     {
-      id:"edible-chicletes",
+      id:"edible-gum",
       category:"edibles",
       name:"Chicletes CBD e THC",
-      price:14.90,
-      short:"Comestível (demo) • CBD/THC • unidades",
-      imageLabel:"Comestíveis",
-      optionGroups:[
-        { key:"cannabinoid", labelKey:"opt_cannabinoid", options:CBD_THC },
-        { key:"flavor", labelKey:"opt_flavor", options:["Mint","Citrus","Bubblegum"] },
-        { key:"units", labelKey:"opt_units", options:["10 un.","30 un."] },
-      ],
-      desc:
-        "Chicletes (demo). Discretos e fáceis de dosar."
+      price:14.9,
+      short:"Comestível • Chiclete • (demo)",
+      imageLabel:"Chicletes",
+      optionGroups:[{ key:"type", labelKey:"opt_type", options:["CBD", "THC"] }, { key:"flavor", labelKey:"opt_flavor", options:["Menta", "Hortelã", "Canela"] }],
+      desc:"Chicletes (demo). Opções CBD ou THC."
     },
-
-
-
+    {
+      id:"edible-lollipops",
+      category:"edibles",
+      name:"Pirulitos THC (sabores)",
+      price:16.9,
+      short:"Comestível • Pirulito • (demo)",
+      imageLabel:"Pirulitos",
+      optionGroups:[{ key:"flavor", labelKey:"opt_flavor", options:["Morango", "Melancia", "Uva", "Manga", "Limão"] }],
+      desc:"Pirulitos (demo). Produto com THC pode ter efeitos psicoativos."
+    },
     // Bebidas
     {
-      id:"bev-soda-infused",
+      id:"bev-soda",
       category:"beverages",
-      name:"Refrigerante infusionado (THC/CBD)",
-      price:7.90,
-      short:"Bebida • THC/CBD • 330ml / 500ml (demo, onde permitido)",
-      imageLabel:"Bebida",
-      optionGroups:[
-        { key:"cannabinoid", labelKey:"opt_cannabinoid", options:["THC","CBD"] },
-        { key:"size", labelKey:"opt_size", options:["330ml","500ml"] },
-        { key:"flavor", labelKey:"opt_flavor", options:["Cola","Limão","Laranja"] },
-      ],
-      desc:
-        "Refrigerante infusionado (demo). Selecione canabinoide, volume e sabor. Sempre verifique a legalidade local e consuma com responsabilidade."
+      name:"Refrigerante infundido THC/CBD",
+      price:12.9,
+      short:"Bebida • (demo)",
+      imageLabel:"Refrigerante",
+      optionGroups:[{ key:"type", labelKey:"opt_type", options:["THC", "CBD"] }, { key:"flavor", labelKey:"opt_flavor", options:["Cola", "Limão", "Gengibre"] }],
+      desc:"Refrigerante (demo)."
     },
     {
-      id:"bev-tea-thc",
+      id:"bev-tea",
       category:"beverages",
-      name:"Chá infusionado THC",
-      price:6.90,
-      short:"Bebida • THC • 300ml / 500ml (demo, onde permitido)",
-      imageLabel:"Bebida",
-      optionGroups:[
-        { key:"cannabinoid", labelKey:"opt_cannabinoid", options:["THC"] },
-        { key:"flavor", labelKey:"opt_flavor", options:["Hortelã","Gengibre","Camomila"] },
-        { key:"size", labelKey:"opt_size", options:["300ml","500ml"] },
-      ],
-      desc:
-        "Chá infusionado THC (demo). Varie sabor e volume. Sempre verifique a legalidade local e consuma com responsabilidade."
+      name:"Chá infundido THC",
+      price:10.9,
+      short:"Bebida • (demo)",
+      imageLabel:"Chá",
+      optionGroups:[{ key:"flavor", labelKey:"opt_flavor", options:["Camomila", "Hibisco", "Chá verde"] }],
+      desc:"Chá (demo). Produto com THC pode ter efeitos psicoativos."
     },
     {
-      id:"bev-lemonade-thc",
+      id:"bev-lemonade",
       category:"beverages",
-      name:"Limonada infusionada THC",
-      price:6.50,
-      short:"Bebida • THC • 400ml / 700ml (demo, onde permitido)",
-      imageLabel:"Bebida",
-      optionGroups:[
-        { key:"cannabinoid", labelKey:"opt_cannabinoid", options:["THC"] },
-        { key:"size", labelKey:"opt_size", options:["400ml","700ml"] },
-        { key:"ice", labelKey:"opt_ice", options:["Com gelo","Sem gelo"] },
-      ],
-      desc:
-        "Limonada infusionada THC (demo). Selecione volume e gelo. Sempre verifique a legalidade local e consuma com responsabilidade."
+      name:"Limonada infundida THC",
+      price:11.9,
+      short:"Bebida • (demo)",
+      imageLabel:"Limonada",
+      optionGroups:[{ key:"flavor", labelKey:"opt_flavor", options:["Clássica", "Gengibre", "Hortelã"] }],
+      desc:"Limonada (demo). Produto com THC pode ter efeitos psicoativos."
     },
-
     // Vapes
     {
       id:"vape-thc",
       category:"vapes",
-      name:"Vape THC",
-      price:24.90,
-      short:"Vape • THC • 100/1000 puxadas (demo, onde permitido)",
+      name:"Vape THC (sabores)",
+      price:59.9,
+      short:"Vape • (demo)",
       imageLabel:"Vape",
-      optionGroups:[
-        { key:"puffs", labelKey:"opt_puffs", options:["100 puxadas","1000 puxadas"] },
-        { key:"flavor", labelKey:"opt_flavor", options:["Manga","Morango","Menta","Uva","Melancia"] },
-      ],
-      desc:
-        "Vape THC (demo). Selecione quantidade de puxadas e sabor. Sempre verifique a legalidade local e use com responsabilidade."
+      optionGroups:[{ key:"puffs", labelKey:"opt_puffs", options:["1000 puffs", "10000 puffs"] }, { key:"flavor", labelKey:"opt_flavor", options:["Menta", "Manga", "Blueberry", "Uva", "Limão", "Melancia"] }],
+      desc:"Vape (demo). Produto com THC pode ter efeitos psicoativos. Confirme conformidade local."
     },
-
-    // Pets (cânhamo/CBD — legalidade varia por país/estado)
+    // Pets
     {
-      id:"pet-oil-cbd",
+      id:"pet-pet-oil",
       category:"pets",
       name:"Óleo CBD Pet",
-      price:32.90,
-      short:"Pet (demo) • cânhamo/CBD • 30ml",
-      imageLabel:"Pets",
-      optionGroups:[
-        { key:"pet", labelKey:"opt_variety", options:["Cão","Gato"] },
-        { key:"size", labelKey:"opt_size", options:["Pequeno","Médio","Grande"] },
-        { key:"mg", labelKey:"opt_mg", options:["150mg","300mg","600mg"] },
-        { key:"ml", labelKey:"opt_ml", options:["30ml"] },
-      ],
-      desc:
-        "Óleo CBD pet (demo). Produtos pet à base de CBD (de cânhamo) são comuns em mercados onde permitido; evite alegações médicas e siga orientação veterinária."
+      price:29.9,
+      short:"Pet • (demo)",
+      imageLabel:"Óleo",
+      optionGroups:[{ key:"strength", labelKey:"opt_strength", options:["Baixa", "Média", "Alta"] }, { key:"weight", labelKey:"opt_weight", options:["30ml", "60ml"] }],
+      desc:"Linha Pet (demo). Exemplos comuns de produtos à base de CBD para pets em mercados regulados. Sempre verifique regulamentação local e orientação veterinária."
     },
     {
-      id:"pet-chews-cbd",
+      id:"pet-pet-calming",
       category:"pets",
-      name:"Petiscos mastigáveis CBD",
-      price:27.90,
-      short:"Pet (demo) • snacks • unidades",
-      imageLabel:"Pets",
-      optionGroups:[
-        { key:"flavor", labelKey:"opt_flavor", options:["Frango","Bacon","Salmão"] },
-        { key:"strength", labelKey:"opt_strength", options:["2mg/un","5mg/un"] },
-        { key:"units", labelKey:"opt_units", options:["30 un.","60 un."] },
-      ],
-      desc:
-        "Petiscos CBD (demo). Linha de snacks mastigáveis para rotina/treino. Verifique conformidade de ingredientes e rotulagem conforme sua jurisdição."
+      name:"Pet Calming Chews (CBD)",
+      price:24.9,
+      short:"Pet • (demo)",
+      imageLabel:"Pet",
+      optionGroups:[{ key:"strength", labelKey:"opt_strength", options:["Baixa", "Média", "Alta"] }, { key:"weight", labelKey:"opt_weight", options:["60 chews", "120 chews"] }],
+      desc:"Linha Pet (demo). Exemplos comuns de produtos à base de CBD para pets em mercados regulados. Sempre verifique regulamentação local e orientação veterinária."
     },
     {
-      id:"pet-balm-cbd",
+      id:"pet-pet-joints",
       category:"pets",
-      name:"Bálsamo tópico com cânhamo/CBD",
-      price:18.90,
-      short:"Pet (demo) • uso tópico",
-      imageLabel:"Pets",
-      optionGroups:[
-        { key:"size", labelKey:"opt_size", options:["30ml","60ml"] },
-      ],
-      desc:
-        "Bálsamo tópico (demo). Opção comum em linhas pet com cânhamo — sempre confira composição e faça teste em pequena área."
+      name:"Pet Joint Support (CBD)",
+      price:26.9,
+      short:"Pet • (demo)",
+      imageLabel:"Pet",
+      optionGroups:[{ key:"strength", labelKey:"opt_strength", options:["Baixa", "Média", "Alta"] }, { key:"weight", labelKey:"opt_weight", options:["50g", "100g"] }],
+      desc:"Linha Pet (demo). Exemplos comuns de produtos à base de CBD para pets em mercados regulados. Sempre verifique regulamentação local e orientação veterinária."
     },
     {
-      id:"pet-shampoo-hemp",
+      id:"pet-pet-balm",
       category:"pets",
-      name:"Shampoo calmante com cânhamo",
-      price:16.90,
-      short:"Pet (demo) • higiene",
-      imageLabel:"Pets",
-      optionGroups:[
-        { key:"ml", labelKey:"opt_ml", options:["250ml","500ml"] },
-      ],
-      desc:
-        "Shampoo com cânhamo (demo). Produto de higiene com apelo de bem-estar — escolha fórmulas suaves e adequadas para pets."
+      name:"Bálsamo tópico CBD (Pet)",
+      price:19.9,
+      short:"Pet • (demo)",
+      imageLabel:"Pet",
+      optionGroups:[{ key:"strength", labelKey:"opt_strength", options:["Baixa", "Média", "Alta"] }, { key:"weight", labelKey:"opt_weight", options:["50g", "100g"] }],
+      desc:"Linha Pet (demo). Exemplos comuns de produtos à base de CBD para pets em mercados regulados. Sempre verifique regulamentação local e orientação veterinária."
     },
-
     // Acessórios
     {
-      id:"acc-canetas-hemp",
+      id:"acc-hemp-pen",
       category:"accessories",
       name:"Canetas Hemp",
-      price:8.90,
-      short:"Acessório • escrita/coleção",
-      imageLabel:"Acessórios",
-      optionGroups:[
-        { key:"variety", labelKey:"opt_variety", options:["Preta","Branca","Verde"] },
-      ],
-      desc:"Canetas Hemp (demo). Um toque de estilo para o dia a dia."
+      price:9.9,
+      short:"Acessório • (demo)",
+      imageLabel:"Acessório",
+      optionGroups:[{ key:"format", labelKey:"opt_format", options:["Preta", "Verde", "Branca"] }],
+      desc:"Canetas Hemp (demo)."
     },
     {
-      id:"acc-camisetas",
+      id:"acc-tshirt",
       category:"accessories",
       name:"Camisetas",
-      price:39.90,
-      short:"Acessório • apparel",
-      imageLabel:"Acessórios",
-      optionGroups:[
-        { key:"size", labelKey:"opt_size", options:["P","M","G","GG"] },
-        { key:"variety", labelKey:"opt_variety", options:["Preta","Branca","Verde"] },
-      ],
-      desc:"Camisetas (demo). Modelagem básica e minimalista."
+      price:39.9,
+      short:"Acessório • (demo)",
+      imageLabel:"Acessório",
+      optionGroups:[{ key:"size", labelKey:"opt_size", options:["P", "M", "G", "GG"] }],
+      desc:"Camisetas (demo)."
     },
     {
-      id:"acc-bones-trucker",
+      id:"acc-cap",
       category:"accessories",
-      name:"Bonés (estilo trucker)",
-      price:29.90,
-      short:"Acessório • boné",
-      imageLabel:"Acessórios",
-      optionGroups:[
-        { key:"variety", labelKey:"opt_variety", options:["Preto","Verde","Branco"] },
-      ],
-      desc:"Bonés trucker (demo). Leve e ventilado."
+      name:"Bonés (trucker)",
+      price:29.9,
+      short:"Acessório • (demo)",
+      imageLabel:"Acessório",
+      optionGroups:[{ key:"size", labelKey:"opt_size", options:["Único"] }],
+      desc:"Bonés (trucker) (demo)."
     },
     {
-      id:"acc-dichavador",
+      id:"acc-grinder",
       category:"accessories",
       name:"Dichavadores",
-      price:16.90,
-      short:"Acessório • tamanhos P / M / G",
-      imageLabel:"Acessórios",
-      optionGroups:[
-        { key:"size", labelKey:"opt_size", options:["P","M","G"] },
-      ],
-      desc:"Dichavadores (demo). Moagem uniforme ajuda na consistência e reduz desperdício."
+      price:19.9,
+      short:"Acessório • (demo)",
+      imageLabel:"Acessório",
+      optionGroups:[{ key:"size", labelKey:"opt_size", options:["P", "M", "G"] }],
+      desc:"Dichavadores (demo)."
     },
     {
-      id:"acc-piteiras",
+      id:"acc-tips",
       category:"accessories",
       name:"Piteiras",
-      price:6.90,
-      short:"Acessório • diversos modelos",
-      imageLabel:"Acessórios",
-      optionGroups:[
-        { key:"variety", labelKey:"opt_variety", options:["Vidro","Madeira","Metal"] },
-      ],
-      desc:"Piteiras (demo). Conforto e melhor fluxo."
+      price:7.9,
+      short:"Acessório • (demo)",
+      imageLabel:"Acessório",
+      optionGroups:[{ key:"format", labelKey:"opt_format", options:["Slim", "Regular"] }],
+      desc:"Piteiras (demo)."
     },
     {
-      id:"acc-sedas",
+      id:"acc-papers",
       category:"accessories",
       name:"Sedas",
-      price:4.90,
-      short:"Acessório • papéis",
-      imageLabel:"Acessórios",
-      optionGroups:[
-        { key:"format", labelKey:"opt_format", options:["King Size","1 1/4","Slim"] },
-        { key:"units", labelKey:"opt_units", options:["32 un.","50 un."] },
-      ],
-      desc:"Sedas (demo). Papéis clássicos e práticos."
+      price:6.9,
+      short:"Acessório • (demo)",
+      imageLabel:"Acessório",
+      optionGroups:[{ key:"format", labelKey:"opt_format", options:["King Size", "1 1/4", "Slim"] }],
+      desc:"Sedas (demo)."
     },
     {
-      id:"acc-bolador",
+      id:"acc-roller",
       category:"accessories",
       name:"Bolador",
-      price:12.90,
-      short:"Acessório • enrolar",
-      imageLabel:"Acessórios",
-      optionGroups:[
-        { key:"size", labelKey:"opt_size", options:["P","M","G"] },
-      ],
-      desc:"Bolador (demo). Ajuda a manter consistência na montagem."
+      price:12.9,
+      short:"Acessório • (demo)",
+      imageLabel:"Acessório",
+      optionGroups:[{ key:"format", labelKey:"opt_format", options:["1 1/4", "King Size"] }],
+      desc:"Bolador (demo)."
     },
     {
-      id:"acc-bongs",
+      id:"acc-bong",
       category:"accessories",
       name:"Bongs",
-      price:89.90,
-      short:"Acessório • vidro/acrílico",
-      imageLabel:"Acessórios",
-      optionGroups:[
-        { key:"variety", labelKey:"opt_variety", options:["Vidro","Acrílico"] },
-        { key:"size", labelKey:"opt_size", options:["Pequeno","Médio","Grande"] },
-      ],
-      desc:"Bongs (demo). Utilize com segurança e cuide da limpeza."
-    },
+      price:89.9,
+      short:"Acessório • (demo)",
+      imageLabel:"Acessório",
+      optionGroups:[{ key:"size", labelKey:"opt_size", options:["Pequeno", "Médio", "Grande"] }],
+      desc:"Bongs (demo)."
+    }
   ];
-
 
   /* ---------- Home hero carousel slides ----------
      Put your real images in: ./assets/hero-*.jpg (or png)
@@ -2224,10 +2230,24 @@ pageRenderAll();
     if(!authArea) return;
     const user = getUser();
     if(user){
-      authArea.innerHTML = `<button class="btn btn--ghost" id="logoutBtn">${t("sign_out")}</button>`;
+      authArea.innerHTML = `
+        <a class="topIcon" href="minhas-compras.html" aria-label="${t("my_orders")}">
+          <span class="sr-only">${t("my_orders")}</span>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 6h10M7 10h10M7 14h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M6 3.8h12c1 0 1.8.8 1.8 1.8v12.4c0 1-.8 1.8-1.8 1.8H6c-1 0-1.8-.8-1.8-1.8V5.6C4.2 4.6 5 3.8 6 3.8Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <button class="topIcon" id="logoutBtn" type="button" aria-label="${t("sign_out")}">
+          <span class="sr-only">${t("sign_out")}</span>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 7V5.8C10 4.8 10.8 4 11.8 4h6.4C19.2 4 20 4.8 20 5.8v12.4c0 1-.8 1.8-1.8 1.8h-6.4c-1 0-1.8-.8-1.8-1.8V17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M4 12h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="m7 9-3 3 3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>`;
       authArea.querySelector("#logoutBtn").addEventListener("click", logout);
     } else {
-      authArea.innerHTML = `<a class="btn btn--ghost" href="login.html">${t("login")}</a>`;
+      authArea.innerHTML = `<a class="topIcon" href="login.html" aria-label="${t("login")}">
+        <span class="sr-only">${t("login")}</span>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 12a4.2 4.2 0 1 0-4.2-4.2A4.2 4.2 0 0 0 12 12Zm0 2.2c-4.2 0-7.6 2-7.6 4.4V20h15.2v-1.4c0-2.4-3.4-4.4-7.6-4.4Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>`;
     }
   }
   
@@ -2649,14 +2669,39 @@ pageRenderAll();
       </div>
     `;
   
-    root.querySelector("#loginForm").addEventListener("submit", (e)=>{
+    root.querySelector("#loginForm").addEventListener("submit", async (e)=>{
       e.preventDefault();
       const fd = new FormData(e.target);
       const email = String(fd.get("email")||"").trim();
       const password = String(fd.get("password")||"").trim();
       if(!email || !password) return;
-      setUser({ email });
-      location.href = "index.html";
+      if(password.length < 8){
+        alert("A senha precisa ter no mínimo 8 caracteres.");
+        return;
+      }
+      try{
+        const payload = await apiFetch("/auth/login", { method:"POST", body: JSON.stringify({ email, password }) });
+        setAuthSession(payload);
+        const ret = localStorage.getItem("hemp_return_after_login");
+        if(ret){ localStorage.removeItem("hemp_return_after_login"); location.href = ret; }
+        else location.href = "index.html";
+      }catch(err){
+        // If user doesn't exist, auto-register then login
+        // @ts-ignore
+        if(err && err.status === 401){
+          try{
+            const payload = await apiFetch("/auth/register", { method:"POST", body: JSON.stringify({ email, password }) });
+            setAuthSession(payload);
+            const ret = localStorage.getItem("hemp_return_after_login");
+            if(ret){ localStorage.removeItem("hemp_return_after_login"); location.href = ret; }
+            else location.href = "index.html";
+            return;
+          }catch(e2){
+            // fallthrough
+          }
+        }
+        alert((err && err.message) ? err.message : "Falha ao entrar.");
+      }
     });
   }
   
@@ -3182,184 +3227,186 @@ pageRenderAll();
     renderPaymentDetails();
     syncChips();
 
-    form.addEventListener("submit", (e)=>{
+    form.addEventListener("submit", async (e)=>{
       e.preventDefault();
-      const ship = getShip();
-      const subtotal = totalsBase.subtotal;
-      const shipping = ship === "exp" ? 14.90 : 7.90;
-      const tax = subtotal > 0 ? subtotal * 0.06 : 0;
-      const total = subtotal + shipping + tax;
 
-      const method = (new FormData(form)).get("pay");
-      const lightningInvoice = makeDemoLightningInvoice(total);
-
-      // Store a minimal order snapshot (demo)
-      const order = {
-        id:"ORD-"+Math.random().toString(16).slice(2,8).toUpperCase(),
-        createdAt:new Date().toISOString(),
-        payMethod: method,
-        totals: { subtotal, shipping, tax, total },
-        lightningInvoice,
-        items: cart
-      };
-      localStorage.setItem(LS.orderKey, JSON.stringify(order));
-
-      // Render a payment screen (do NOT clear cart automatically; wait for confirmation)
-      root.innerHTML = `
-        <div class="cardform cardform--wide">
-          <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
-            <div>
-              <h2 style="margin:0 0 6px">${t("checkout")}</h2>
-              <div class="small">${t("order_ok")} <strong>${order.id}</strong></div>
-              <div class="small">${new Date(order.createdAt).toLocaleString()}</div>
-            </div>
-            <a class="btn btn--ghost" href="carrinho.html">${t("cart")}</a>
-          </div>
-          <div class="hr"></div>
-          <div class="small" style="margin-bottom:10px">${(method === "credit" || method === "debit") ? t("pay_hint_card") : (method === "btc" ? "" : t("pay_hint_fiat"))}</div>
-          <div id="payScreen"></div>
-
-          <div class="hr"></div>
-          <div class="totals">
-            <div class="totals__row"><span>${t("subtotal")}</span><strong>${money(subtotal)}</strong></div>
-            <div class="totals__row"><span>${t("shipping")}</span><strong>${money(shipping)}</strong></div>
-            <div class="totals__row"><span>${t("tax")}</span><strong>${money(tax)}</strong></div>
-            <div class="hr"></div>
-            <div class="totals__row" style="font-size:18px"><span>${t("total")}</span><strong>${money(total)}</strong></div>
-          </div>
-
-                    <div class="small muted" style="margin-top:12px">Status: aguardando confirmação do pagamento (demo).</div>
-
-        </div>
-      `;
-
-      const payScreen = document.getElementById("payScreen");
-      if(payScreen){
-        payScreen.innerHTML = `<div class="paybox" id="payPreview"></div>`;
-        const preview = document.getElementById("payPreview");
-        if(preview){
-          if(method === "btc"){
-            preview.innerHTML = `
-              <div class="paybox__grid">
-                <div class="paybox__panel">
-                  <div class="paybox__title">${t("invoice_title")}</div>
-                  <div class="label" style="margin:10px 0 6px">${t("invoice_label")}</div>
-                  <textarea class="input paybox__invoice" readonly>${lightningInvoice}</textarea>
-                  <div class="paybox__actions">
-                    <button type="button" class="btn btn--ghost" id="copyInvoice">${t("invoice_copy")}</button>
-                    <a class="btn btn--primary" href="lightning:${lightningInvoice}">${t("open_wallet")}</a>
-                  </div>
-                  <div class="small" id="copyStatus" aria-live="polite"></div>
-                </div>
-              </div>
-            `;
-          } else {
-            const bank = makeDemoBank();
-            const pix = makeDemoPix();
-            const boleto = makeDemoBoleto();
-            let fiatBlock = "";
-            if(method === "credit" || method === "debit"){
-              fiatBlock = `
-                <div class="paybox__panel">
-                  <div class="paybox__title">${t("fiat_title")} — ${method === "debit" ? t("pay_debit") : t("pay_credit")}</div>
-                  <div class="small" style="margin-bottom:10px">(demo) Insira os dados do cartão no checkout e finalize no gateway em produção.</div>
-                </div>
-              `;
-            } else if(method === "pix"){
-              fiatBlock = `
-                <div class="paybox__panel">
-                  <div class="paybox__title">${t("fiat_title")} — ${t("pay_pix")}</div>
-                  <div class="field">
-                    <div class="label">${t("fiat_pix_key")}</div>
-                    <input class="input" value="${pix.key}" readonly />
-                  </div>
-                  <div class="field">
-                    <div class="label">${t("fiat_pix_payload")}</div>
-                    <textarea class="input paybox__invoice" readonly>${pix.payload}</textarea>
-                  </div>
-                </div>
-              `;
-            } else if(method === "boleto"){
-              fiatBlock = `
-                <div class="paybox__panel">
-                  <div class="paybox__title">${t("fiat_title")} — ${t("pay_boleto")}</div>
-                  <div class="field">
-                    <div class="label">${t("fiat_boleto_code")}</div>
-                    <textarea class="input paybox__invoice" readonly>${boleto.code}</textarea>
-                  </div>
-                  <div class="small">(demo) Boleto compensa em horas/dias.</div>
-                </div>
-              `;
-            } else {
-              fiatBlock = `
-                <div class="paybox__panel">
-                  <div class="paybox__title">${t("fiat_title")} — ${String(method).toUpperCase()}</div>
-                  <div class="formgrid">
-                    <div class="field">
-                      <div class="label">${t("fiat_bank_name")}</div>
-                      <input class="input" value="${bank.bank}" readonly />
-                    </div>
-                    <div class="field">
-                      <div class="label">${t("fiat_agency")}</div>
-                      <input class="input" value="${bank.agency}" readonly />
-                    </div>
-                    <div class="field">
-                      <div class="label">${t("fiat_account")}</div>
-                      <input class="input" value="${bank.account}" readonly />
-                    </div>
-                    <div class="field">
-                      <div class="label">${t("fiat_holder")}</div>
-                      <input class="input" value="${bank.holder}" readonly />
-                    </div>
-                    <div class="field" style="grid-column:1/-1">
-                      <div class="label">${t("fiat_cnpj")}</div>
-                      <input class="input" value="${bank.doc}" readonly />
-                    </div>
-                  </div>
-                </div>
-              `;
-            }
-
-            // For non-BTC methods, show only the chosen BRL/card method.
-            preview.innerHTML = `
-              <div class="paybox__grid">
-                ${fiatBlock}
-              </div>
-            `;
-          }
-
-          const copyBtn = preview.querySelector("#copyInvoice");
-          const copyStatus = preview.querySelector("#copyStatus");
-          if(copyBtn){
-            copyBtn.addEventListener("click", async ()=>{
-              const ta = preview.querySelector("textarea.paybox__invoice");
-              const text = ta ? ta.value : "";
-              try{ await navigator.clipboard.writeText(text); } catch(err){ if(ta){ ta.focus(); ta.select(); } }
-              if(copyStatus) copyStatus.textContent = t("invoice_copied");
-            });
-          }
-        }
+      const user = getUser();
+      const tok = getToken();
+      if(!user || !tok){
+        // Save return URL and ask user to login
+        try{ localStorage.setItem("hemp_return_after_login", location.href); }catch{}
+        location.href = "login.html";
+        return;
       }
 
-      const btnPaid = document.getElementById("btnPaid");
-      if(btnPaid){
-        btnPaid.addEventListener("click", ()=>{
-          setCart([]);
-          alert("Pedido confirmado (demo).\\nEm produção, valide o pagamento antes de liberar.");
-          location.href = "index.html";
+      const cartNow = getCart();
+      if(!cartNow.length){
+        alert("Seu carrinho está vazio.");
+        location.href = "produtos.html";
+        return;
+      }
+
+      const fd = new FormData(form);
+      const first = String(fd.get("first")||"").trim();
+      const last  = String(fd.get("last")||"").trim();
+      const phone = String(fd.get("phone")||"").trim();
+      const address1 = String(fd.get("address1")||"").trim();
+      const address2 = String(fd.get("address2")||"").trim();
+      const city = String(fd.get("city")||"").trim();
+      const state = String(fd.get("state")||"").trim().toUpperCase();
+      const zipRaw = String(fd.get("zip")||"").trim();
+      const method = String(fd.get("pay")||paySel.value||"pix");
+
+      // Parse street + number from address1 (best effort)
+      let street = address1, number = "s/n";
+      const m = address1.match(/^(.*?)[,\s]+(\d+[\w\-\/]*)\s*$/);
+      if(m){ street = m[1].trim() || street; number = m[2].trim() || number; }
+
+      const zip = zipRaw.replace(/\D/g,"").slice(0,8);
+
+      const addressPayload = {
+        label: "Entrega",
+        recipient: `${first} ${last}`.trim() || (user.email || "Cliente"),
+        phone: phone || undefined,
+        street: street || "Rua",
+        number,
+        complement: address2 || undefined,
+        district: "Centro",
+        city: city || "Cidade",
+        state: (state && state.length===2) ? state : "SP",
+        zip: zip || "00000000"
+      };
+
+      const provider = (method === "btc") ? "mock" : "mercadopago";
+
+      try{
+        // 1) Create address
+        const addr = await apiFetch("/addresses", { method:"POST", body: JSON.stringify(addressPayload) });
+
+        // 2) Create checkout
+        const items = cartNow.map(i=>({ sku: i.productId, quantity: i.qty }));
+        const chk = await apiFetch("/checkout", {
+          method:"POST",
+          body: JSON.stringify({
+            addressId: addr.id,
+            items,
+            paymentProvider: provider,
+            clientPaymentMethod: method
+          })
         });
+
+        // 3) For fiat, redirect to provider checkout
+        if(provider === "mercadopago" && chk.checkoutUrl){
+          location.href = chk.checkoutUrl;
+          return;
+        }
+
+        // 4) Mock flow: auto-approve payment and go to success
+        await apiFetch(`/webhooks/mock/approve?orderId=${encodeURIComponent(chk.orderId)}`, { method:"POST" });
+        setCart([]);
+        location.href = `checkout-success.html?orderId=${encodeURIComponent(chk.orderId)}`;
+      }catch(err){
+        alert((err && err.message) ? err.message : "Falha ao finalizar o pedido.");
       }
     });
   }
 
   /* ---------- Render all pages ---------- */
-  function pageRenderAll(){
+  
+  /* ---------- Orders (My purchases) page ---------- */
+  function renderOrdersPage(){
+    const root = document.getElementById("ordersPage");
+    if(!root) return;
+
+    const user = getUser();
+    const tok = getToken();
+    if(!user || !tok){
+      root.innerHTML = `
+        <div class="cardform">
+          <h2 style="margin:0 0 8px">${t("my_orders")}</h2>
+          <p class="small">Você precisa entrar para ver seu histórico.</p>
+          <div class="hr"></div>
+          <a class="btn btn--primary" href="login.html">${t("login")}</a>
+        </div>
+      `;
+      return;
+    }
+
+    root.innerHTML = `
+      <div class="cardform">
+        <h2 style="margin:0 0 8px">${t("my_orders")}</h2>
+        <p class="small">Carregando…</p>
+      </div>
+    `;
+
+    apiFetch("/orders")
+      .then((orders)=>{
+        if(!Array.isArray(orders) || orders.length===0){
+          root.innerHTML = `
+            <div class="cardform">
+              <h2 style="margin:0 0 8px">${t("my_orders")}</h2>
+              <p class="small">Nenhum pedido encontrado.</p>
+              <div class="hr"></div>
+              <a class="btn btn--primary" href="produtos.html">${t("products")}</a>
+            </div>
+          `;
+          return;
+        }
+
+        const rows = orders.map(o=>{
+          const when = o.createdAt ? new Date(o.createdAt).toLocaleString() : "";
+          const total = (o.totalCents||0)/100;
+          const items = Array.isArray(o.items) ? o.items.map(i=>`<div class="small" style="opacity:.9">• ${escapeHTML(i.name||i.sku)} × ${i.quantity}</div>`).join("") : "";
+          const pay = o.paymentStatus ? `<span class="badge">${escapeHTML(o.paymentStatus)}</span>` : "";
+          const ln = o.lightningStatus ? `<span class="badge">${escapeHTML(o.lightningStatus)}</span>` : "";
+          return `
+            <div class="orderCard">
+              <div class="orderCard__top">
+                <div>
+                  <div class="orderCard__id">#${escapeHTML(o.id)}</div>
+                  <div class="small">${when}</div>
+                </div>
+                <div style="text-align:right">
+                  <div class="orderCard__total">${money(total)}</div>
+                  <div class="small">${escapeHTML(o.status||"")}</div>
+                </div>
+              </div>
+              <div class="orderCard__meta">${pay} ${ln}</div>
+              <div class="hr"></div>
+              <div>${items}</div>
+            </div>
+          `;
+        }).join("");
+
+        root.innerHTML = `
+          <div class="cardform">
+            <h2 style="margin:0 0 12px">${t("my_orders")}</h2>
+            ${rows}
+          </div>
+        `;
+      })
+      .catch((err)=>{
+        root.innerHTML = `
+          <div class="cardform">
+            <h2 style="margin:0 0 8px">${t("my_orders")}</h2>
+            <p class="small">Falha ao carregar pedidos: ${escapeHTML(err?.message||"")}</p>
+          </div>
+        `;
+      });
+  }
+
+  function escapeHTML(s){
+    return String(s||"").replace(/[&<>"']/g, (c)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[c]));
+  }
+
+function pageRenderAll(){
     renderHome();
     renderProductsList();
     renderProductPage();
     renderLogin();
     renderCart();
     renderCheckout();
+    renderOrdersPage();
     mountAuthUI();
     updateCartBadge();
   }

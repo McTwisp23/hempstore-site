@@ -23,3 +23,8 @@ Depois acesse: http://localhost:8000
 
 ## Observações
 - O botão **Voltar** na página de produto retorna para a página anterior real (histórico/referrer), com fallback para `produtos.html`.
+
+
+## Estrutura simplificada
+- Removida a pasta duplicada/legado `hempstore-site-github-ready_responsivo_v8/` (não era usada pelo site e só confundia o projeto).
+- Projeto permanece 100% estático: `*.html` + `styles.css` + `app.js`.

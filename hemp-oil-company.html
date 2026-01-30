@@ -10,35 +10,35 @@
 
 <!-- HEADER -->
 <header class="header">
-  <div class="container header__inner">
+  <div class="headerTop">
+    <div class="container headerTop__inner">
+<div class="headerTop__actions">
+        <button class="langbtn" id="langBtn" type="button" aria-label="Language selector">
+          <span class="langbtn__flag">🇧🇷</span>
+          <span class="langbtn__code">PT</span>
+          <span class="langbtn__chev">▾</span>
+        </button>
+        <div id="authArea"></div>
+      </div>
+    </div>
+  </div>
 
-    <!-- LOGO -->
-    <a class="brand" href="index.html">
-      <span class="brand__name">HEMP</span>
-      <span class="brand__name brand__name--light">Store</span>
-    </a>
+  <div class="headerMain">
+    <div class="container headerMain__inner">
+      <a class="brand" href="index.html" aria-label="HEMP Store">
+        <span class="brand__name">HEMP</span>
+        <span class="brand__name brand__name--light">Store</span>
+      </a>
 
-    <!-- NAV + LANG + AUTH -->
-    <div class="navwrap">
-      <nav class="nav">
-        <a class="nav__link nav__link--active" href="index.html" data-i18n="home"></a>
+      <nav class="nav nav--main" aria-label="Navegação principal">
+        <a class="nav__link" href="index.html" data-i18n="home"></a>
         <a class="nav__link" href="produtos.html" data-i18n="products"></a>
-        <a class="nav__link" href="index.html#sobre" data-i18n="about"></a>
-        <a class="nav__link" href="index.html#contato" data-i18n="contact"></a>
-                <a class="nav__link" href="hemp-oil-company.html" data-i18n="company"></a>
-<a class="nav__link" href="carrinho.html" data-i18n="cart"></a>
-        <span class="badge" id="cartBadge">0</span>
+        <a class="nav__link nav__link--active" href="hemp-oil-company.html" data-i18n="company"></a>
+        <span class="nav__item nav__item--cart">
+          <a class="nav__link nav__link--cart" href="carrinho.html" aria-label="Carrinho"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6.2 6.5h15l-1.6 8.2a2 2 0 0 1-2 1.6H9a2 2 0 0 1-2-1.6L5.2 3.8H3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm8 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr-only" data-i18n="cart"></span></a>
+          <span class="badge badge--nav" id="cartBadge">0</span>
+        </span>
       </nav>
-
-      <!-- Language selector -->
-      <button class="langbtn" id="langBtn" aria-label="Language selector">
-        <span class="langbtn__flag">🇧🇷</span>
-        <span class="langbtn__code">PT</span>
-        <span class="langbtn__chev">▾</span>
-      </button>
-
-      <!-- Login / Logout -->
-      <div id="authArea"></div>
     </div>
   </div>
 </header>
